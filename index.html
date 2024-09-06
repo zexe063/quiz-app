@@ -154,8 +154,7 @@
 
 </div>
 
-<audio id="correctSound" src="correct.mp3" preload="auto"></audio>
-<audio id="incorrectSound" src="wrong.mp3" preload="auto"></audio>
+<button id="startQuiz" style="display: none;">Start Quiz</button>
 
 <script>
  const  container = document.querySelector(".container")
@@ -527,90 +526,78 @@ const  questions = [
 ];
 
 const alpha= ["a","b","c","d"]
-let audioContext;
-
-// Function to initialize audio context
-function initAudio() {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-}
+let audioEnabled = false;
 
 // Function to play sound
-function playSound(soundId) {
-    if (!audioContext) {
-        initAudio();
-    }
-    const sound = document.getElementById(soundId);
-    sound.currentTime = 0;
-    const source = audioContext.createMediaElementSource(sound);
-    source.connect(audioContext.destination);
+function playSound(isCorrect) {
+    if (!audioEnabled) return;
+    
+    const sound = new Audio(isCorrect ? 'correct.mp3' : 'wrong.mp3');
     sound.play().catch(error => console.log('Audio play failed:', error));
 }
 
-questions.forEach((question,index)=>{
-     const questionContainer = document.createElement("div");
-     questionContainer.classList.add("question-container");
-     questionContainer.innerHTML = `<div class="question-text"><span> ${index+1}.</span> <span> ${question.text}</span> </div>
-     <div class="options_conatainer">
-     ${question.options.map((option,index)=>{
-return `<div class ="option"><span class="index">${alpha[index]}</span><span class="option-text">${option}</span></div>`
-     }).join('')}
-        </div>
-     `
-     container.appendChild(questionContainer);
+// Create question elements
+function createQuestions() {
+    questions.forEach((question, index) => {
+        const questionContainer = document.createElement("div");
+        questionContainer.classList.add("question-container");
+        questionContainer.innerHTML = `
+            <div class="question-text"><span>${index + 1}.</span> <span>${question.text}</span></div>
+            <div class="options_conatainer">
+                ${question.options.map((option, i) => `
+                    <div class="option"><span class="index">${alpha[i]}</span><span class="option-text">${option}</span></div>
+                `).join('')}
+            </div>
+        `;
+        container.appendChild(questionContainer);
+    });
 
-})
+    // Add click event listeners to options
+    document.querySelectorAll(".options_conatainer").forEach((item, index) => {
+        item.addEventListener("click", (e) => {
+            const checkvalue = e.target.closest(".option");
+            if (!checkvalue) return null;
+            
+            if (e.target.closest(".options_conatainer").classList.contains("attempted")) {
+                alert("already attempted");
+                return null;
+            } else {
+                e.target.closest(".options_conatainer").classList.add("attempted");
+            }
 
+            const question = questions[index];
+            const option = e.target.closest(".option");
+            const text = option.querySelector(".option-text").textContent;
 
+            if (text === question.options[question.answer]) {
+                playSound(true);
+                option.classList.add("correct");
+            } else {
+                playSound(false);
+                option.classList.add("wrong");
 
- document.querySelectorAll(".options_conatainer").forEach((item, index)=>{
- 
-     item.addEventListener("click",(e)=>{
-   const checkvalue = e.target.closest(".option") 
-   if(!checkvalue) return null;
-if(e.target.closest(".options_conatainer").classList.contains("attempted")){
-    alert("alerdy attempted")
-    return null;
- }
- else{
-    e.target.closest(".options_conatainer").classList.add("attempted")
- }
-
- const question = questions[index];
-       const option = e.target.closest(".option");  
-     
-     const  text = option.querySelector(".option-text").textContent;
-if(text === question.options[question.answer]){
-  playSound("correctSound");
-  option.classList.add("correct")
-
-
-    
-}
-else{
-  playSound("incorrectSound");
-    option.classList.add("wrong")
-
-
-const child = item.querySelectorAll(".option")
-child.forEach((item)=>{
-     const text = item.querySelector(".option-text").textContent;
-     if(text === question.options[question.answer]){
-        item.classList.add("correct")
-     }
-})
-
+                const child = item.querySelectorAll(".option");
+                child.forEach((item) => {
+                    const text = item.querySelector(".option-text").textContent;
+                    if (text === question.options[question.answer]) {
+                        item.classList.add("correct");
+                    }
+                });
+            }
+        });
+    });
 }
 
+// Initialize quiz
+function initQuiz() {
+    audioEnabled = true;
+    document.getElementById('startQuiz').style.display = 'none';
+    createQuestions();
+}
 
-     })
-
-    
-    
- })
-
-// Initialize audio on first user interaction
-document.body.addEventListener('click', initAudio, { once: true });
-
+// Show start button
+document.getElementById('startQuiz').style.display = 'block';
+document.getElementById('startQuiz').addEventListener('click', initQuiz);
 </script>
 
 </body>
