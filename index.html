@@ -154,7 +154,9 @@
 
 </div>
 
-<button id="startQuiz" style="display: none;">Start Quiz</button>
+<button id="startQuiz">Start Quiz</button>
+
+<audio id="soundEffect" preload="auto"></audio>
 
 <script>
  const  container = document.querySelector(".container")
@@ -526,14 +528,28 @@ const  questions = [
 ];
 
 const alpha= ["a","b","c","d"]
+const soundEffect = document.getElementById('soundEffect');
 let audioEnabled = false;
 
 // Function to play sound
 function playSound(isCorrect) {
     if (!audioEnabled) return;
     
-    const sound = new Audio(isCorrect ? 'correct.mp3' : 'wrong.mp3');
-    sound.play().catch(error => console.log('Audio play failed:', error));
+    soundEffect.src = isCorrect ? 'correct.wav' : 'wrong.wav';
+    soundEffect.play().catch(error => {
+        console.log('Audio play failed:', error);
+        // Visual feedback fallback
+        const feedback = document.createElement('div');
+        feedback.textContent = isCorrect ? '✓' : '✗';
+        feedback.style.position = 'fixed';
+        feedback.style.top = '50%';
+        feedback.style.left = '50%';
+        feedback.style.transform = 'translate(-50%, -50%)';
+        feedback.style.fontSize = '100px';
+        feedback.style.color = isCorrect ? 'green' : 'red';
+        document.body.appendChild(feedback);
+        setTimeout(() => feedback.remove(), 500);
+    });
 }
 
 // Create question elements
@@ -593,10 +609,13 @@ function initQuiz() {
     audioEnabled = true;
     document.getElementById('startQuiz').style.display = 'none';
     createQuestions();
+    
+    // Try to play a silent audio to enable audio playback
+    soundEffect.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+    soundEffect.play().catch(error => console.log('Silent audio play failed:', error));
 }
 
 // Show start button
-document.getElementById('startQuiz').style.display = 'block';
 document.getElementById('startQuiz').addEventListener('click', initQuiz);
 </script>
 
