@@ -154,10 +154,6 @@
 
 </div>
 
-<button id="startQuiz">Start Quiz</button>
-
-<audio id="soundEffect" preload="auto"></audio>
-
 <script>
  const  container = document.querySelector(".container")
 const  questions = [
@@ -528,95 +524,71 @@ const  questions = [
 ];
 
 const alpha= ["a","b","c","d"]
-const soundEffect = document.getElementById('soundEffect');
-let audioEnabled = false;
 
-// Function to play sound
-function playSound(isCorrect) {
-    if (!audioEnabled) return;
+ questions.forEach((question,index)=>{
+     const questionContainer = document.createElement("div");
+     questionContainer.classList.add("question-container");
+     questionContainer.innerHTML = `<div class="question-text"><span> ${index+1}.</span> <span> ${question.text}</span> </div>
+     <div class="options_conatainer">
+     ${question.options.map((option,index)=>{
+return `<div class ="option"><span class="index">${alpha[index]}</span><span class="option-text">${option}</span></div>`
+     }).join('')}
+        </div>
+     `
+     container.appendChild(questionContainer);
+
+})
+
+
+
+ document.querySelectorAll(".options_conatainer").forEach((item, index)=>{
+ 
+     item.addEventListener("click",(e)=>{
+   const checkvalue = e.target.closest(".option") 
+   if(!checkvalue) return null;
+if(e.target.closest(".options_conatainer").classList.contains("attempted")){
+    alert("alerdy attempted")
+    return null;
+ }
+ else{
+    e.target.closest(".options_conatainer").classList.add("attempted")
+ }
+
+ const question = questions[index];
+       const option = e.target.closest(".option");  
+     
+     const  text = option.querySelector(".option-text").textContent;
+if(text === question.options[question.answer]){
+  const audio = new Audio("correct.mp3")
+audio.play()
+option.classList.add("correct")
+
+
     
-    soundEffect.src = isCorrect ? 'correct.wav' : 'wrong.wav';
-    soundEffect.play().catch(error => {
-        console.log('Audio play failed:', error);
-        // Visual feedback fallback
-        const feedback = document.createElement('div');
-        feedback.textContent = isCorrect ? '✓' : '✗';
-        feedback.style.position = 'fixed';
-        feedback.style.top = '50%';
-        feedback.style.left = '50%';
-        feedback.style.transform = 'translate(-50%, -50%)';
-        feedback.style.fontSize = '100px';
-        feedback.style.color = isCorrect ? 'green' : 'red';
-        document.body.appendChild(feedback);
-        setTimeout(() => feedback.remove(), 500);
-    });
+}
+else{
+  const wrong = new Audio("wrong.mp3");
+  wrong.play()
+    option.classList.add("wrong")
+
+
+const child = item.querySelectorAll(".option")
+child.forEach((item)=>{
+     const text = item.querySelector(".option-text").textContent;
+     if(text === question.options[question.answer]){
+        item.classList.add("correct")
+     }
+})
+
 }
 
-// Create question elements
-function createQuestions() {
-    questions.forEach((question, index) => {
-        const questionContainer = document.createElement("div");
-        questionContainer.classList.add("question-container");
-        questionContainer.innerHTML = `
-            <div class="question-text"><span>${index + 1}.</span> <span>${question.text}</span></div>
-            <div class="options_conatainer">
-                ${question.options.map((option, i) => `
-                    <div class="option"><span class="index">${alpha[i]}</span><span class="option-text">${option}</span></div>
-                `).join('')}
-            </div>
-        `;
-        container.appendChild(questionContainer);
-    });
 
-    // Add click event listeners to options
-    document.querySelectorAll(".options_conatainer").forEach((item, index) => {
-        item.addEventListener("click", (e) => {
-            const checkvalue = e.target.closest(".option");
-            if (!checkvalue) return null;
-            
-            if (e.target.closest(".options_conatainer").classList.contains("attempted")) {
-                alert("already attempted");
-                return null;
-            } else {
-                e.target.closest(".options_conatainer").classList.add("attempted");
-            }
+     })
 
-            const question = questions[index];
-            const option = e.target.closest(".option");
-            const text = option.querySelector(".option-text").textContent;
-
-            if (text === question.options[question.answer]) {
-                playSound(true);
-                option.classList.add("correct");
-            } else {
-                playSound(false);
-                option.classList.add("wrong");
-
-                const child = item.querySelectorAll(".option");
-                child.forEach((item) => {
-                    const text = item.querySelector(".option-text").textContent;
-                    if (text === question.options[question.answer]) {
-                        item.classList.add("correct");
-                    }
-                });
-            }
-        });
-    });
-}
-
-// Initialize quiz
-function initQuiz() {
-    audioEnabled = true;
-    document.getElementById('startQuiz').style.display = 'none';
-    createQuestions();
     
-    // Try to play a silent audio to enable audio playback
-    soundEffect.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-    soundEffect.play().catch(error => console.log('Silent audio play failed:', error));
-}
+    
+ })
 
-// Show start button
-document.getElementById('startQuiz').addEventListener('click', initQuiz);
 </script>
 
 </body>
