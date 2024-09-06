@@ -154,6 +154,9 @@
 
 </div>
 
+<audio id="correctSound" src="correct.mp3" preload="auto"></audio>
+<audio id="incorrectSound" src="wrong.mp3" preload="auto"></audio>
+
 <script>
  const  container = document.querySelector(".container")
 const  questions = [
@@ -524,8 +527,26 @@ const  questions = [
 ];
 
 const alpha= ["a","b","c","d"]
+let audioContext;
 
- questions.forEach((question,index)=>{
+// Function to initialize audio context
+function initAudio() {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+// Function to play sound
+function playSound(soundId) {
+    if (!audioContext) {
+        initAudio();
+    }
+    const sound = document.getElementById(soundId);
+    sound.currentTime = 0;
+    const source = audioContext.createMediaElementSource(sound);
+    source.connect(audioContext.destination);
+    sound.play().catch(error => console.log('Audio play failed:', error));
+}
+
+questions.forEach((question,index)=>{
      const questionContainer = document.createElement("div");
      questionContainer.classList.add("question-container");
      questionContainer.innerHTML = `<div class="question-text"><span> ${index+1}.</span> <span> ${question.text}</span> </div>
@@ -559,16 +580,14 @@ if(e.target.closest(".options_conatainer").classList.contains("attempted")){
      
      const  text = option.querySelector(".option-text").textContent;
 if(text === question.options[question.answer]){
-  const audio = new Audio("correct.mp3")
-audio.play()
-option.classList.add("correct")
+  playSound("correctSound");
+  option.classList.add("correct")
 
 
     
 }
 else{
-  const wrong = new Audio("wrong.mp3");
-  wrong.play()
+  playSound("incorrectSound");
     option.classList.add("wrong")
 
 
@@ -589,7 +608,10 @@ child.forEach((item)=>{
     
  })
 
-</script>+
+// Initialize audio on first user interaction
+document.body.addEventListener('click', initAudio, { once: true });
+
+</script>
 
 </body>
 </html>
