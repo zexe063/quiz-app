@@ -559,10 +559,16 @@ if(e.target.closest(".options_conatainer").classList.contains("attempted")){
      
      const  text = option.querySelector(".option-text").textContent;
 if(text === question.options[question.answer]){
+  const audio = new Audio("correct.mp3")
+audio.play()
 option.classList.add("correct")
+
+
     
 }
 else{
+  const wrong = new Audio("wrong.mp3");
+  wrong.play()
     option.classList.add("wrong")
 
 
